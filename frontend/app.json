@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "SpendWise",
+    "slug": "spendwise",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.yourname.spendwise"
+    },
+    "android": {
+      "package": "com.yourname.spendwise"
+    }
+  }
+}
