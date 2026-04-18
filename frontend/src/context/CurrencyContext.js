@@ -43,14 +43,18 @@ export const CurrencyProvider = ({ children }) => {
   };
 
   const formatAmount = (amount) => {
-    return `${currency.symbol} ${Number(amount).toLocaleString(currency.locale, {
+    return `${currency.symbol} ${formatValue(amount)}`;
+  };
+
+  const formatValue = (amount) => {
+    return Number(amount).toLocaleString(currency.locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    })}`;
+    });
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, changeCurrency, formatAmount, loadComplete }}>
+    <CurrencyContext.Provider value={{ currency, changeCurrency, formatAmount, formatValue, loadComplete }}>
       {children}
     </CurrencyContext.Provider>
   );

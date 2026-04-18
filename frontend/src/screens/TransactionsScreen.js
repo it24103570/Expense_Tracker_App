@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, RefreshControl, TextInput,
@@ -23,6 +23,12 @@ export default function TransactionsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState({ message: '', visible: false });
+
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => 
+      t.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [transactions, searchQuery]);
 
   const showToast = (msg) => {
     setToast({ message: msg, visible: true });
@@ -160,16 +166,12 @@ export default function TransactionsScreen() {
         contentContainerStyle={s.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.green} />}
       >
-        {transactions
-          .filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()))
-          .length === 0 ? (
+        {filteredTransactions.length === 0 ? (
           <EmptyState icon="🔍" message={searchQuery ? "No matching transactions." : "No transactions found."} />
         ) : (
-          transactions
-            .filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()))
-            .map((item) => (
-              <TransactionItem key={item._id} item={item} onPress={openEdit} />
-            ))
+          filteredTransactions.map((item) => (
+            <TransactionItem key={item._id} item={item} onPress={openEdit} />
+          ))
         )}
       </ScrollView>
 

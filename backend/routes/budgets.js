@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
           date: { $gte: startOfMonth, $lte: endOfMonth },
         });
         const spent = transactions.reduce((s, t) => s + t.amount, 0);
-        const percentage = Math.min(100, Math.round((spent / budget.limit) * 100));
+        const percentage = Math.round((spent / budget.limit) * 100);
 
         return {
           _id: budget._id,

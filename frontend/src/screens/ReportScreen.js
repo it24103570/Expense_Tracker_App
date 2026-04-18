@@ -11,7 +11,7 @@ import { SectionHeader, Toast } from '../components/UI';
 
 export default function ReportScreen() {
   const { colors } = useTheme();
-  const { formatAmount } = useCurrency();
+  const { formatAmount, formatValue } = useCurrency();
   
   const [summary, setSummary] = useState({ income: 0, expenses: 0, balance: 0 });
   const [report, setReport] = useState({ totalSpent: 0, transactionCount: 0, dailyAvg: 0, budgetUsedPercent: 0 });
@@ -173,7 +173,7 @@ export default function ReportScreen() {
           <View style={s.chartBars}>
             {chartData.map((bar, i) => (
               <View key={i} style={s.barCol}>
-                <Text style={s.barVal}>{bar.total > 0 ? formatAmount(bar.total).split(' ')[1] : ''}</Text>
+                <Text style={s.barVal}>{bar.total > 0 ? formatValue(bar.total) : ''}</Text>
                 <View
                   style={[
                     s.barFill,

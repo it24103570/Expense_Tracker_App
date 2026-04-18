@@ -227,7 +227,7 @@ export default function SettingsScreen({ navigation }) {
             <View style={s.statDivider} />
             <View style={[s.statItem, { flex: 1.5 }]}>
               <Text style={[s.statVal, { fontSize: 16, textAlign: 'center' }]}>
-                {formatAmount(stats.totalTracked).split(' ')[0]} {formatAmount(stats.totalTracked).split(' ')[1]}
+                {formatAmount(stats.totalTracked)}
               </Text>
               <Text style={s.statLabel}>Total Tracked</Text>
             </View>

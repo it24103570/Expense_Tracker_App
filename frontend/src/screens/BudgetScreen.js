@@ -165,13 +165,18 @@ export default function BudgetScreen() {
                 <View
                   style={[
                     s.progressFill,
-                    { width: `${b.percentage || 0}%`, backgroundColor: getBarColor(b.percentage || 0) },
+                    { 
+                      width: `${Math.min(100, b.percentage || 0)}%`, 
+                      backgroundColor: getBarColor(b.percentage || 0) 
+                    },
                   ]}
                 />
               </View>
-              {b.percentage >= 90 && (
+              {b.percentage >= 100 ? (
+                <Text style={s.warningText}>🚨 Budget Exceeded!</Text>
+              ) : b.percentage >= 90 ? (
                 <Text style={s.warningText}>⚠️ Budget almost exceeded!</Text>
-              )}
+              ) : null}
             </View>
           ))
         )}

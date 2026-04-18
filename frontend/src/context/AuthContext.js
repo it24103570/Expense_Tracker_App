@@ -15,9 +15,19 @@ export const AuthProvider = ({ children }) => {
       try {
         const savedToken = await AsyncStorage.getItem('token');
         const savedUser = await AsyncStorage.getItem('user');
+        
         if (savedToken && savedUser) {
-          setToken(savedToken);
-          setUser(JSON.parse(savedUser));
+          // Verify token with backend
+          try {
+            const res = await authAPI.me();
+            // Update user data from server to ensure it's fresh
+            setUser(res.data.user);
+            setToken(savedToken);
+            await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
+          } catch (apiErr) {
+            console.log('Session validation failed:', apiErr.message);
+            await logout(); // Token expired or invalid
+          }
         }
       } catch (err) {
         console.log('Session load error:', err);
