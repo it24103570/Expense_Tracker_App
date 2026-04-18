@@ -12,11 +12,15 @@ router.use(protect);
 // @access Private
 router.get('/', async (req, res) => {
   try {
+    const { month, year } = req.query;
+    const now = new Date();
+    const queryMonth = month ? parseInt(month) - 1 : now.getMonth();
+    const queryYear = year ? parseInt(year) : now.getFullYear();
+
     const budgets = await Budget.find({ user: req.user._id });
 
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const startOfMonth = new Date(queryYear, queryMonth, 1);
+    const endOfMonth = new Date(queryYear, queryMonth + 1, 0, 23, 59, 59);
 
     const budgetsWithSpending = await Promise.all(
       budgets.map(async (budget) => {

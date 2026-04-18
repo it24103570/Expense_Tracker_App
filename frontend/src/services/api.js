@@ -51,18 +51,18 @@ export const transactionsAPI = {
   create: (data) => api.post('/transactions', data),
   update: (id, data) => api.put(`/transactions/${id}`, data),
   delete: (id) => api.delete(`/transactions/${id}`),
-  getSummary: () => api.get('/transactions/summary'),
-  getStats: () => api.get('/transactions/stats'),
+  getSummary: (params) => api.get('/transactions/summary', { params }),
+  getStats: (params) => api.get('/transactions/stats', { params }),
   deleteAll: () => api.delete('/transactions/all'),
-  getCategories: () => api.get('/transactions/categories'),
-  getReport: () => api.get('/transactions/report'),
-  getChart: () => api.get('/transactions/chart'),
-  getDailyActivity: () => api.get('/transactions/daily'),
+  getCategories: (params) => api.get('/transactions/categories', { params }),
+  getReport: (params) => api.get('/transactions/report', { params }),
+  getChart: (params) => api.get('/transactions/chart', { params }),
+  getDailyActivity: (params) => api.get('/transactions/daily', { params }),
 };
 
 // ─── Budgets ─────────────────────────────────────────────────────────────────
 export const budgetsAPI = {
-  getAll: () => api.get('/budgets'),
+  getAll: (params) => api.get('/budgets', { params }),
   save: (category, limit) => api.post('/budgets', { category, limit }),
   delete: (id) => api.delete(`/budgets/${id}`),
 };

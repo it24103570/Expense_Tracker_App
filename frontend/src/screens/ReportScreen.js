@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useMonth } from '../context/MonthContext';
 import { transactionsAPI } from '../services/api';
 import { RADIUS, CAT_ICONS, CAT_COLORS } from '../styles/theme';
 import { currentMonthLabel } from '../utils/helpers';
@@ -12,6 +13,7 @@ import { SectionHeader, Toast } from '../components/UI';
 export default function ReportScreen() {
   const { colors } = useTheme();
   const { formatAmount, formatValue } = useCurrency();
+  const { selectedMonth, setSelectedMonth } = useMonth();
   
   const [summary, setSummary] = useState({ income: 0, expenses: 0, balance: 0 });
   const [report, setReport] = useState({ totalSpent: 0, transactionCount: 0, dailyAvg: 0, budgetUsedPercent: 0 });
@@ -20,13 +22,26 @@ export default function ReportScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState({ message: '', visible: false });
 
+  // Generate last 12 months for the selector
+  const now = new Date();
+  const monthsList = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    return {
+      label: d.toLocaleString('default', { month: 'short', year: 'numeric' }),
+      month: d.getMonth() + 1,
+      year: d.getFullYear(),
+      id: `${d.getFullYear()}-${d.getMonth() + 1}`
+    };
+  }).reverse();
+
   const fetchData = async () => {
     try {
+      const params = { month: selectedMonth.month, year: selectedMonth.year };
       const [summaryRes, chartRes, reportRes, dailyRes] = await Promise.all([
-        transactionsAPI.getSummary(),
-        transactionsAPI.getChart(),
-        transactionsAPI.getReport(),
-        transactionsAPI.getDailyActivity(),
+        transactionsAPI.getSummary(params),
+        transactionsAPI.getChart(), // Chart shows 6-month history, usually independent of single month selection, but could be adjusted
+        transactionsAPI.getReport(params),
+        transactionsAPI.getDailyActivity(params),
       ]);
       setSummary(summaryRes.data.data);
       setChartData(chartRes.data.data);
@@ -37,7 +52,7 @@ export default function ReportScreen() {
     }
   };
 
-  useFocusEffect(useCallback(() => { fetchData(); }, []));
+  useFocusEffect(useCallback(() => { fetchData(); }, [selectedMonth]));
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -53,11 +68,21 @@ export default function ReportScreen() {
   const s = StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.bg3 },
     header: {
-      backgroundColor: colors.bg, paddingHorizontal: 16, paddingVertical: 16,
+      backgroundColor: colors.bg, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8,
       borderBottomWidth: 0.5, borderBottomColor: colors.border,
     },
     headerTitle: { fontSize: 24, fontWeight: '700', color: colors.text },
     headerSub: { fontSize: 13, color: colors.text2, marginTop: 4 },
+    
+    monthSelector: { paddingVertical: 12, backgroundColor: colors.bg },
+    monthPill: {
+      paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.full,
+      backgroundColor: colors.bg2, marginRight: 8, borderWidth: 1, borderColor: 'transparent'
+    },
+    monthPillActive: { backgroundColor: colors.green + '15', borderColor: colors.green },
+    monthLabel: { fontSize: 13, color: colors.text2, fontWeight: '500' },
+    monthLabelActive: { color: colors.green, fontWeight: '600' },
+
     scroll: { flex: 1 },
     content: { padding: 16, paddingBottom: 40 },
 
@@ -115,7 +140,29 @@ export default function ReportScreen() {
       
       <View style={s.header}>
         <Text style={s.headerTitle}>Monthly Report</Text>
-        <Text style={s.headerSub}>Overview for {currentMonthLabel()}</Text>
+        <Text style={s.headerSub}>Overview of your financial activity</Text>
+      </View>
+
+      {/* Month Selector */}
+      <View style={s.monthSelector}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={{ paddingHorizontal: 16 }}
+        >
+          {monthsList.map((m) => {
+            const isActive = selectedMonth.month === m.month && selectedMonth.year === m.year;
+            return (
+              <TouchableOpacity 
+                key={m.id} 
+                style={[s.monthPill, isActive && s.monthPillActive]}
+                onPress={() => setSelectedMonth({ month: m.month, year: m.year })}
+              >
+                <Text style={[s.monthLabel, isActive && s.monthLabelActive]}>{m.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
       <ScrollView
@@ -189,7 +236,7 @@ export default function ReportScreen() {
 
         {/* Daily Activity Chart */}
         <View style={s.dailyCard}>
-          <Text style={s.chartTitle}>Daily Activity (This Month)</Text>
+          <Text style={s.chartTitle}>Daily Activity ({summary.month})</Text>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false} 

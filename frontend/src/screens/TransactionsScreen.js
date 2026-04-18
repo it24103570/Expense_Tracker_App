@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
+import { useMonth } from '../context/MonthContext';
 import { transactionsAPI } from '../services/api';
 import { RADIUS, CATEGORIES } from '../styles/theme';
 import TransactionItem from '../components/TransactionItem';
@@ -16,6 +17,7 @@ const FILTER_CATS = [{ value: 'all', label: 'All' }, ...CATEGORIES];
 
 export default function TransactionsScreen() {
   const { colors } = useTheme();
+  const { selectedMonth } = useMonth();
   const [transactions, setTransactions] = useState([]);
   const [filterCat, setFilterCat] = useState('all');
   const [modalVisible, setModalVisible] = useState(false);
@@ -37,8 +39,13 @@ export default function TransactionsScreen() {
 
   const fetchTransactions = async () => {
     try {
-      const params = filterCat !== 'all' ? { category: filterCat } : {};
-      const res = await transactionsAPI.getAll({ ...params, limit: 100 });
+      const params = { 
+        ... (filterCat !== 'all' ? { category: filterCat } : {}),
+        month: selectedMonth.month,
+        year: selectedMonth.year,
+        limit: 100 
+      };
+      const res = await transactionsAPI.getAll(params);
       setTransactions(res.data.data);
     } catch (err) {
       console.log('Fetch Error:', err.message);
@@ -46,7 +53,7 @@ export default function TransactionsScreen() {
     }
   };
 
-  useFocusEffect(useCallback(() => { fetchTransactions(); }, [filterCat]));
+  useFocusEffect(useCallback(() => { fetchTransactions(); }, [filterCat, selectedMonth]));
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -112,7 +119,12 @@ export default function TransactionsScreen() {
 
       {/* Top Bar */}
       <View style={s.topbar}>
-        <Text style={s.topbarTitle}>Transactions</Text>
+        <View>
+          <Text style={s.topbarTitle}>Transactions</Text>
+          <Text style={{ fontSize: 11, color: colors.text2 }}>
+            {new Date(selectedMonth.year, selectedMonth.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </Text>
+        </View>
         <TouchableOpacity 
           onPress={openAdd}
           hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}

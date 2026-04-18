@@ -5,6 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useMonth } from '../context/MonthContext';
 import { transactionsAPI, budgetsAPI } from '../services/api';
 import { RADIUS, CAT_ICONS, CAT_COLORS } from '../styles/theme';
 import { currentMonthLabel } from '../utils/helpers';
@@ -17,6 +18,7 @@ export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
   const { colors } = useTheme();
   const { formatAmount } = useCurrency();
+  const { selectedMonth } = useMonth();
   
   const [summary, setSummary] = useState({ income: 0, expenses: 0, balance: 0 });
   const [categories, setCategories] = useState([]);
@@ -33,10 +35,11 @@ export default function HomeScreen({ navigation }) {
 
   const fetchData = async () => {
     try {
+      const params = { month: selectedMonth.month, year: selectedMonth.year };
       const [summaryRes, catsRes, recentRes] = await Promise.all([
-        transactionsAPI.getSummary(),
-        transactionsAPI.getCategories(),
-        transactionsAPI.getAll({ limit: 4 }),
+        transactionsAPI.getSummary(params),
+        transactionsAPI.getCategories(params),
+        transactionsAPI.getAll({ ...params, limit: 4 }), // ✅ FIXED: Added month & year params
       ]);
       setSummary(summaryRes.data.data);
       setCategories(catsRes.data.data);
@@ -46,7 +49,7 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  useFocusEffect(useCallback(() => { fetchData(); }, []));
+  useFocusEffect(useCallback(() => { fetchData(); }, [selectedMonth]));
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -165,7 +168,7 @@ export default function HomeScreen({ navigation }) {
       >
         {/* Summary Card */}
         <View style={s.summaryCard}>
-          <Text style={s.summaryMonth}>{currentMonthLabel()}</Text>
+          <Text style={s.summaryMonth}>{summary.month || currentMonthLabel()}</Text>
           <Text style={s.summaryBalance}>{formatAmount(summary.balance)}</Text>
           <View style={s.summaryRow}>
             <View style={s.summaryItem}>

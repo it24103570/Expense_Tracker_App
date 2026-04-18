@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useMonth } from '../context/MonthContext';
 import { budgetsAPI } from '../services/api';
 import { RADIUS, BUDGET_CATEGORIES, CAT_ICONS } from '../styles/theme';
 import { PrimaryButton, EmptyState, Toast } from '../components/UI';
@@ -11,6 +12,7 @@ import { PrimaryButton, EmptyState, Toast } from '../components/UI';
 export default function BudgetScreen() {
   const { colors } = useTheme();
   const { formatAmount } = useCurrency();
+  const { selectedMonth } = useMonth();
   const [budgets, setBudgets] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCat, setSelectedCat] = useState('food');
@@ -26,14 +28,15 @@ export default function BudgetScreen() {
 
   const fetchBudgets = async () => {
     try {
-      const res = await budgetsAPI.getAll();
+      const params = { month: selectedMonth.month, year: selectedMonth.year };
+      const res = await budgetsAPI.getAll(params);
       setBudgets(res.data.data);
     } catch (err) {
       console.log(err.message);
     }
   };
 
-  useFocusEffect(useCallback(() => { fetchBudgets(); }, []));
+  useFocusEffect(useCallback(() => { fetchBudgets(); }, [selectedMonth]));
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -131,7 +134,12 @@ export default function BudgetScreen() {
 
       {/* Top Bar */}
       <View style={s.topbar}>
-        <Text style={s.topbarTitle}>Budget</Text>
+        <View>
+          <Text style={s.topbarTitle}>Budget</Text>
+          <Text style={{ fontSize: 11, color: colors.text2 }}>
+            {new Date(selectedMonth.year, selectedMonth.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </Text>
+        </View>
         <TouchableOpacity 
           onPress={() => { setLimitInput(''); setSelectedCat('food'); setModalVisible(true); }}
           hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
@@ -154,9 +162,21 @@ export default function BudgetScreen() {
                 <Text style={s.budgetCat}>
                   {CAT_ICONS[b.category.toLowerCase()] || '📦'} {b.category.charAt(0).toUpperCase() + b.category.slice(1)}
                 </Text>
-                <TouchableOpacity onPress={() => handleDelete(b._id)}>
-                  <Text style={s.removeBtn}>Remove</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setSelectedCat(b.category.toLowerCase());
+                      setLimitInput(b.limit.toString());
+                      setModalVisible(true);
+                    }}
+                    style={{ marginRight: 12 }}
+                  >
+                    <Text style={{ fontSize: 13, color: colors.blue }}>Change</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDelete(b._id)}>
+                    <Text style={s.removeBtn}>Remove</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
               <Text style={s.budgetVals}>
                 {formatAmount(b.spent || 0)} / {formatAmount(b.limit)} ({b.percentage || 0}%)

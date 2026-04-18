@@ -13,12 +13,20 @@ router.use(protect);
 // @access Private
 router.get('/', async (req, res) => {
   try {
-    const { type, category, startDate, endDate, limit = 50 } = req.query;
+    const { type, category, startDate, endDate, month, year, limit = 50 } = req.query;
     const filter = { user: req.user._id };
 
     if (type) filter.type = type;
     if (category) filter.category = category;
-    if (startDate || endDate) {
+    
+    if (month || year) {
+      const now = new Date();
+      const queryMonth = month ? parseInt(month) - 1 : now.getMonth();
+      const queryYear = year ? parseInt(year) : now.getFullYear();
+      const start = new Date(queryYear, queryMonth, 1);
+      const end = new Date(queryYear, queryMonth + 1, 0, 23, 59, 59);
+      filter.date = { $gte: start, $lte: end };
+    } else if (startDate || endDate) {
       filter.date = {};
       if (startDate) filter.date.$gte = new Date(startDate);
       if (endDate) filter.date.$lte = new Date(endDate);
@@ -69,9 +77,13 @@ router.post(
 // @access Private
 router.get('/summary', async (req, res) => {
   try {
+    const { month, year } = req.query;
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const queryMonth = month ? parseInt(month) - 1 : now.getMonth();
+    const queryYear = year ? parseInt(year) : now.getFullYear();
+
+    const startOfMonth = new Date(queryYear, queryMonth, 1);
+    const endOfMonth = new Date(queryYear, queryMonth + 1, 0, 23, 59, 59);
 
     const transactions = await Transaction.find({
       user: req.user._id,
@@ -91,7 +103,7 @@ router.get('/summary', async (req, res) => {
         income,
         expenses,
         balance: income - expenses,
-        month: now.toLocaleString('default', { month: 'long', year: 'numeric' }),
+        month: startOfMonth.toLocaleString('default', { month: 'long', year: 'numeric' }),
       },
     });
   } catch (err) {
@@ -104,9 +116,13 @@ router.get('/summary', async (req, res) => {
 // @access Private
 router.get('/categories', async (req, res) => {
   try {
+    const { month, year } = req.query;
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const queryMonth = month ? parseInt(month) - 1 : now.getMonth();
+    const queryYear = year ? parseInt(year) : now.getFullYear();
+
+    const startOfMonth = new Date(queryYear, queryMonth, 1);
+    const endOfMonth = new Date(queryYear, queryMonth + 1, 0, 23, 59, 59);
 
     const transactions = await Transaction.find({
       user: req.user._id,
@@ -142,13 +158,19 @@ router.get('/categories', async (req, res) => {
 // @access Private
 router.get('/report', async (req, res) => {
   try {
+    const { month, year } = req.query;
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const queryMonth = month ? parseInt(month) - 1 : now.getMonth();
+    const queryYear = year ? parseInt(year) : now.getFullYear();
+
+    const startOfMonth = new Date(queryYear, queryMonth, 1);
+    const endOfMonth = new Date(queryYear, queryMonth + 1, 0, 23, 59, 59);
     
-    // Days in current month and days passed
-    const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const daysPassed = now.getDate();
+    // Days in queried month and days passed (if current month)
+    const totalDaysInMonth = new Date(queryYear, queryMonth + 1, 0).getDate();
+    const daysPassed = (queryMonth === now.getMonth() && queryYear === now.getFullYear()) 
+      ? now.getDate() 
+      : totalDaysInMonth;
 
     // Fetch transactions
     const transactions = await Transaction.find({
@@ -219,11 +241,15 @@ router.get('/chart', async (req, res) => {
 // @access Private
 router.get('/daily', async (req, res) => {
   try {
+    const { month, year } = req.query;
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const queryMonth = month ? parseInt(month) - 1 : now.getMonth();
+    const queryYear = year ? parseInt(year) : now.getFullYear();
+
+    const startOfMonth = new Date(queryYear, queryMonth, 1);
+    const endOfMonth = new Date(queryYear, queryMonth + 1, 0, 23, 59, 59);
     
-    const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const totalDays = new Date(queryYear, queryMonth + 1, 0).getDate();
 
     const transactions = await Transaction.find({
       user: req.user._id,
@@ -240,7 +266,7 @@ router.get('/daily', async (req, res) => {
       dailyActivity.push({
         day,
         total: dayTotal,
-        isFuture: day > now.getDate(),
+        isFuture: (queryYear > now.getFullYear()) || (queryYear === now.getFullYear() && queryMonth > now.getMonth()) || (queryYear === now.getFullYear() && queryMonth === now.getMonth() && day > now.getDate()),
       });
     }
 
