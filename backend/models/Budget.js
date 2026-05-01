@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+//categories
 const BudgetSchema = new mongoose.Schema(
   {
     user: {
