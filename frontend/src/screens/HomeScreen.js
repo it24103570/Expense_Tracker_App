@@ -65,25 +65,7 @@ export default function HomeScreen({ navigation }) {
       } else {
         await transactionsAPI.create(data);
         showToast('Transaction added!');
-        
-        // --- Budget Notification Logic ---
-        if (data.type === 'expense') {
-          // Fetch updated budgets to check if limit exceeded
-          const budgetRes = await budgetsAPI.getAll();
-          const budgets = budgetRes.data.data;
-          
-          // Find the budget for the category we just added an expense to
-          const categoryBudget = budgets.find(b => b.category.toLowerCase() === data.category.toLowerCase());
-          
-          if (categoryBudget && categoryBudget.spent > categoryBudget.limit) {
-            // Trigger local notification
-            await NotificationService.sendBudgetAlert(
-              categoryBudget.category,
-              formatAmount(categoryBudget.spent),
-              formatAmount(categoryBudget.limit)
-            );
-          }
-        }
+
       }
       await fetchData();
     } catch (err) {

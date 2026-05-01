@@ -48,9 +48,8 @@ export default function SettingsScreen({ navigation }) {
     try {
       await AsyncStorage.setItem('dailyReminderEnabled', value.toString());
       if (value) {
-        // Schedule for 8:00 PM (20:00)
-        await NotificationService.scheduleDailyReminder(20, 0);
-        Alert.alert('Notifications Enabled', 'Daily reminder set for 8:00 PM.');
+        await NotificationService.scheduleDailyReminder();
+        Alert.alert('Notifications Enabled', 'Daily reminder has been turned on.');
       } else {
         await NotificationService.cancelDailyReminders();
       }
@@ -189,7 +188,7 @@ export default function SettingsScreen({ navigation }) {
           <View style={s.row}>
             <View>
               <Text style={s.rowLabel}>Daily Reminder</Text>
-              <Text style={s.rowSub}>Remind me to track my expenses at 8:00 PM</Text>
+              <Text style={s.rowSub}>Remind me to track my expenses</Text>
             </View>
             <Switch
               value={reminderEnabled}

@@ -4,7 +4,8 @@ import { Platform } from 'react-native';
 // Configure how notifications should be handled when the app is in the foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -47,11 +48,9 @@ class NotificationService {
   }
 
   /**
-   * Schedule a repeating daily reminder at a specific time.
-   * @param {number} hour - 0-23
-   * @param {number} minute - 0-59
+   * Schedule a repeating daily reminder (repeats every 24 hours from now).
    */
-  async scheduleDailyReminder(hour, minute) {
+  async scheduleDailyReminder() {
     try {
       // 1. Request permissions first
       const hasPermission = await this.requestPermissions();
@@ -69,41 +68,16 @@ class NotificationService {
           sound: true,
         },
         trigger: {
-          hour: hour,
-          minute: minute,
+          type: 'timeInterval',
+          seconds:  24 * 60 * 60, // 24 hours in seconds
           repeats: true,
         },
       });
 
-      console.log(`Daily reminder scheduled (ID: ${id}) for ${hour}:${minute}`);
+      console.log(`Daily reminder scheduled (ID: ${id}) to repeat every 24 hours`);
       return id;
     } catch (error) {
       console.error('Error scheduling daily reminder:', error);
-    }
-  }
-
-  /**
-   * Send an instant local notification for budget alerts.
-   * @param {string} category - The category name
-   * @param {number} spent - Amount spent
-   * @param {number} limit - Budget limit
-   */
-  async sendBudgetAlert(category, spent, limit) {
-    try {
-      // Request permissions (non-intrusive if already granted)
-      await this.requestPermissions();
-
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "⚠️ Budget Exceeded!",
-          body: `You've spent ${spent} in ${category}, which exceeds your limit of ${limit}!`,
-          data: { screen: 'Budget' },
-          color: '#FF0000',
-        },
-        trigger: null, // Send immediately
-      });
-    } catch (error) {
-      console.error('Error sending budget alert:', error);
     }
   }
 
@@ -118,6 +92,33 @@ class NotificationService {
       console.log('All scheduled notifications cancelled.');
     } catch (error) {
       console.error('Error cancelling notifications:', error);
+    }
+  }
+
+  /**
+   * Example: Send a notification after a specified delay (in seconds).
+   * @param {number} delayInSeconds - How many seconds to wait before triggering
+   */
+  async sendDelayedNotification(delayInSeconds = 10) {
+    try {
+      await this.requestPermissions();
+      
+      const id = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "⏱️ Time's up!",
+          body: `This notification was triggered after ${delayInSeconds} seconds.`,
+          sound: true,
+        },
+        trigger: {
+          type: 'timeInterval',
+          seconds: delayInSeconds,
+          repeats: false,
+        },
+      });
+      console.log(`Delayed notification scheduled (ID: ${id})`);
+      return id;
+    } catch (error) {
+      console.error('Error scheduling delayed notification:', error);
     }
   }
 }

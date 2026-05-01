@@ -179,7 +179,7 @@ export default function BudgetScreen() {
                 </View>
               </View>
               <Text style={s.budgetVals}>
-                {formatAmount(b.spent || 0)} / {formatAmount(b.limit)} ({b.percentage || 0}%)
+                {formatAmount(b.spent || 0)} / {formatAmount(b.limit)} ({Math.min(b.percentage || 0, 100)}%)
               </Text>
               <View style={s.progressBg}>
                 <View
