@@ -73,40 +73,7 @@ Install the following before starting:
 
 ---
 
-### STEP 1 — Open the Project in VS Code
-
-1. Open VS Code
-2. Click **File → Open Folder**
-3. Select the `SpendWise` folder
-4. Open two integrated terminals: one for `backend`, one for `frontend`
-   - Terminal menu → **New Terminal**
-   - Split terminal using the split icon
-
----
-
-### STEP 2 — Start MongoDB
-
-**Option A: If MongoDB is installed locally**
-```bash
-# macOS / Linux
-mongod --dbpath /data/db
-
-# Windows (run as Administrator)
-"C:\Program Files\MongoDB\Server\7.0\bin\mongod.exe"
-```
-
-**Option B: Use MongoDB Atlas (cloud — recommended)**
-1. Go to https://cloud.mongodb.com and create a free account
-2. Create a free M0 cluster
-3. Click **Connect → Drivers** and copy the connection string
-4. Replace `MONGO_URI` in `backend/.env` with your Atlas URI:
-   ```
-   MONGO_URI=mongodb+srv://youruser:yourpassword@cluster0.xxxxx.mongodb.net/spendwise
-   ```
-
----
-
-### STEP 3 — Set Up the Backend
+### STEP 1 — Set Up the Backend
 
 In your first terminal, navigate to backend:
 
@@ -114,25 +81,11 @@ In your first terminal, navigate to backend:
 cd backend
 ```
 
-**3a. Install dependencies:**
+**1a. Install dependencies:**
 ```bash
 npm install
 ```
-
-**3b. Configure environment variables:**
-
-Open `backend/.env` and verify/update:
-```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/spendwise
-JWT_SECRET=your_super_secret_key_change_this
-JWT_EXPIRE=30d
-NODE_ENV=development
-```
-
-> ⚠️ Change `JWT_SECRET` to a long random string for security.
-
-**3c. Start the backend server:**
+**1b. Start the backend server:**
 ```bash
 npm run dev
 ```
@@ -143,13 +96,13 @@ You should see:
 ✅ MongoDB Connected: localhost
 ```
 
-**3d. Test the API (optional):**
+**1d. Test the API (optional):**
 Open your browser and go to: `http://localhost:5000`
 You should see: `{ "message": "SpendWise API is running 🚀" }`
 
 ---
 
-### STEP 4 — Set Up the Frontend
+### STEP 2 — Set Up the Frontend
 
 In your second terminal, navigate to frontend:
 
