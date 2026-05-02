@@ -7,19 +7,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useMonth } from '../context/MonthContext';
-import { transactionsAPI } from '../services/api';
-import { RADIUS, CATEGORIES } from '../styles/theme';
+import { transactionsAPI, categoriesAPI } from '../services/api';
+import { RADIUS } from '../styles/theme';
 import TransactionItem from '../components/TransactionItem';
 import TransactionModal from '../components/TransactionModal';
 import { EmptyState, Toast } from '../components/UI';
 
-const FILTER_CATS = [{ value: 'all', label: 'All' }, ...CATEGORIES];
-
-export default function TransactionsScreen() {
+export default function TransactionsScreen({ navigation }) {
   const { colors } = useTheme();
   const { selectedMonth } = useMonth();
   const [transactions, setTransactions] = useState([]);
   const [filterCat, setFilterCat] = useState('all');
+  const [apiCategories, setApiCategories] = useState([{ value: 'all', label: 'All' }]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +52,23 @@ export default function TransactionsScreen() {
     }
   };
 
-  useFocusEffect(useCallback(() => { fetchTransactions(); }, [filterCat, selectedMonth]));
+  const fetchCategories = async () => {
+    try {
+      const res = await categoriesAPI.getAll();
+      const fetchedCats = res.data.data.map(c => ({
+        value: c.name.toLowerCase(),
+        label: c.name
+      }));
+      setApiCategories([{ value: 'all', label: 'All' }, ...fetchedCats]);
+    } catch (err) {
+      console.log('Fetch Categories Error:', err.message);
+    }
+  };
+
+  useFocusEffect(useCallback(() => { 
+    fetchTransactions(); 
+    fetchCategories();
+  }, [filterCat, selectedMonth]));
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -125,12 +140,26 @@ export default function TransactionsScreen() {
             {new Date(selectedMonth.year, selectedMonth.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
           </Text>
         </View>
-        <TouchableOpacity 
-          onPress={openAdd}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-        >
-          <Text style={s.addBtnText}>＋</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('Categories')}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{
+              flexDirection: 'row', alignItems: 'center', gap: 6,
+              backgroundColor: colors.bg2, paddingHorizontal: 10, paddingVertical: 6, 
+              borderRadius: RADIUS.full
+            }}
+          >
+            <Text style={{ fontSize: 14 }}>🏷️</Text>
+            <Text style={{ fontSize: 11, color: colors.text2, fontWeight: '600' }}>Manage Categories</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={openAdd}
+            hitSlop={{ top: 20, bottom: 20, left: 10, right: 20 }}
+          >
+            <Text style={s.addBtnText}>＋</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -160,7 +189,7 @@ export default function TransactionsScreen() {
         style={s.filterScroll}
         contentContainerStyle={s.filterContent}
       >
-        {FILTER_CATS.map((c) => (
+        {apiCategories.map((c) => (
           <TouchableOpacity
             key={c.value}
             style={[s.pill, filterCat === c.value && s.pillActive]}

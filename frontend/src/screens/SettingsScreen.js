@@ -241,16 +241,6 @@ export default function SettingsScreen({ navigation }) {
         {/* Data section */}
         <Text style={s.sectionTitle}>Data</Text>
         <View style={s.card}>
-          <TouchableOpacity 
-            style={[s.row, { borderBottomWidth: 0.5, borderBottomColor: colors.border }]} 
-            onPress={() => navigation.navigate('Categories')}
-          >
-            <View>
-              <Text style={s.rowLabel}>Manage Categories</Text>
-              <Text style={s.rowSub}>Add, edit, or remove custom categories</Text>
-            </View>
-            <Text style={{ color: colors.text2, fontSize: 20 }}>→</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={s.clearBtn} onPress={handleClearData}>
             <Text style={{ fontSize: 18 }}>🗑️</Text>
             <Text style={s.clearText}>Clear All Expense Data</Text>
