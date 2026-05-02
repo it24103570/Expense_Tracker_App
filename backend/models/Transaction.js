@@ -25,17 +25,6 @@ const TransactionSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: [
-        'food',
-        'transport',
-        'shopping',
-        'health',
-        'entertainment',
-        'education',
-        'utilities',
-        'salary',
-        'other',
-      ],
       required: [true, 'Category is required'],
     },
     date: {
