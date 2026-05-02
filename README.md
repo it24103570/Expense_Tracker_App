@@ -169,41 +169,6 @@ You will see a QR code and options in the terminal.
 5. Tap **+** to add your first transaction!
 
 ---
-
-## 🔌 API Endpoints Reference
-
-### Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login |
-| GET | `/api/auth/me` | Get current user |
-
-### Transactions
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/transactions` | Get all (supports ?category=food&type=expense) |
-| POST | `/api/transactions` | Create transaction |
-| PUT | `/api/transactions/:id` | Update transaction |
-| DELETE | `/api/transactions/:id` | Delete transaction |
-| GET | `/api/transactions/summary` | Monthly income/expense/balance |
-| GET | `/api/transactions/chart` | 6-month chart data |
-
-### Budgets
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/budgets` | Get budgets with spending % |
-| POST | `/api/budgets` | Create or update budget |
-| DELETE | `/api/budgets/:id` | Delete budget |
-
-### Users
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| PUT | `/api/users/profile` | Update name/email |
-| PUT | `/api/users/password` | Change password |
-
----
-
 ## 🔧 Common Errors & Fixes
 
 | Error | Fix |
