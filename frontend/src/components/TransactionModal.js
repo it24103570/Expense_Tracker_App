@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet, TextInput, Platform } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { RADIUS, CATEGORIES } from '../styles/theme';
+import { RADIUS, CATEGORIES as DEFAULT_CATEGORIES } from '../styles/theme';
 import { PrimaryButton } from './UI';
+import { categoriesAPI } from '../services/api';
 
 const TYPE_OPTIONS = ['expense', 'income'];
 
@@ -11,11 +12,32 @@ export default function TransactionModal({ visible, onClose, onSave, editItem })
   const [type, setType] = useState('expense');
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('food');
+  const [category, setCategory] = useState('');
+  const [apiCategories, setApiCategories] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await categoriesAPI.getAll();
+      setApiCategories(res.data.data);
+      if (!editItem && res.data.data.length > 0) {
+        // Set a default category when creating new
+        const defaultEx = res.data.data.find(c => c.type === 'expense');
+        if (defaultEx) setCategory(defaultEx.name.toLowerCase());
+      }
+    } catch (err) {
+      console.log('Error fetching categories:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (visible) {
+      fetchCategories();
+    }
+  }, [visible]);
 
   useEffect(() => {
     if (editItem) {
@@ -29,7 +51,7 @@ export default function TransactionModal({ visible, onClose, onSave, editItem })
       setType('expense');
       setTitle('');
       setAmount('');
-      setCategory('food');
+      // setCategory will be handled by fetchCategories if not editing
       setDate(new Date().toISOString().split('T')[0]);
       setNote('');
     }
@@ -141,17 +163,20 @@ export default function TransactionModal({ visible, onClose, onSave, editItem })
           <Text style={s.label}>Category</Text>
           <View style={{ height: 48, marginBottom: 12 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.catScroll}>
-              {CATEGORIES.filter(c => type === 'income' ? true : c.value !== 'salary').map((c) => (
-                <TouchableOpacity
-                  key={c.value}
-                  style={[s.catPill, category === c.value && s.catPillActive]}
-                  onPress={() => setCategory(c.value)}
-                >
-                  <Text style={[s.catPillText, category === c.value && s.catPillTextActive]}>
-                    {c.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {apiCategories.filter(c => c.type === type).map((c) => {
+                const catValue = c.name.toLowerCase();
+                return (
+                  <TouchableOpacity
+                    key={c._id}
+                    style={[s.catPill, category === catValue && s.catPillActive]}
+                    onPress={() => setCategory(catValue)}
+                  >
+                    <Text style={[s.catPillText, category === catValue && s.catPillTextActive]}>
+                      {c.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
 
