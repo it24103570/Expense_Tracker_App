@@ -296,7 +296,7 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </Modal>
 
-      {/* Change Password Modal */}
+      {/* Change Password Modal.. */}
       <Modal visible={pwModalVisible} transparent animationType="slide" onRequestClose={() => setPwModalVisible(false)}>
         <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={() => setPwModalVisible(false)} />
         <View style={s.sheet}>
