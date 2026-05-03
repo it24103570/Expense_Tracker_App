@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Animated,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { RADIUS } from '../styles/theme';
 
@@ -31,19 +32,49 @@ export const PrimaryButton = ({ title, onPress, loading, style }) => {
 };
 
 // ─── Form Input ───────────────────────────────────────────────────────────────
-export const FormInput = ({ label, error, style, ...props }) => {
+export const FormInput = ({ label, error, style, isPassword, ...props }) => {
   const { colors } = useTheme();
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const isActuallyPassword = isPassword || props.secureTextEntry;
+
   return (
     <View style={[{ marginBottom: 16 }, style]}>
       {label ? <Text style={{ fontSize: 13, color: colors.text2, marginBottom: 6 }}>{label}</Text> : null}
-      <TextInput
-        style={[
-          { borderWidth: 0.5, borderColor: colors.border, borderRadius: RADIUS.md, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15, color: colors.text, backgroundColor: colors.bg },
-          error ? { borderColor: colors.red } : null
-        ]}
-        placeholderTextColor={colors.text2}
-        {...props}
-      />
+      <View style={{ justifyContent: 'center' }}>
+        <TextInput
+          placeholderTextColor={colors.text2}
+          {...props}
+          style={[
+            { 
+              borderWidth: 0.5, 
+              borderColor: colors.border, 
+              borderRadius: RADIUS.md, 
+              paddingHorizontal: 12, 
+              paddingVertical: 10, 
+              paddingRight: isActuallyPassword ? 44 : 12,
+              fontSize: 15, 
+              color: colors.text, 
+              backgroundColor: colors.bg 
+            },
+            error ? { borderColor: colors.red } : null,
+            props.style
+          ]}
+          secureTextEntry={isActuallyPassword ? !showPassword : props.secureTextEntry}
+        />
+        {isActuallyPassword && (
+          <TouchableOpacity 
+            onPress={() => setShowPassword(!showPassword)}
+            style={{ position: 'absolute', right: 12, padding: 4 }}
+          >
+            <Ionicons 
+              name={showPassword ? "eye-off-outline" : "eye-outline"} 
+              size={20} 
+              color={colors.text2} 
+            />
+          </TouchableOpacity>
+        )}
+      </View>
       {error ? <Text style={{ color: colors.red, fontSize: 12, marginTop: 4 }}>{error}</Text> : null}
     </View>
   );

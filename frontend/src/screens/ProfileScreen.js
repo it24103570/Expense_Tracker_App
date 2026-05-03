@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { usersAPI, SERVER_URL } from '../services/api';
 import { RADIUS } from '../styles/theme';
-import { PrimaryButton, Toast } from '../components/UI';
+import { PrimaryButton, Toast, FormInput } from '../components/UI';
 import { formatJoinDate } from '../utils/helpers';
 
 export default function ProfileScreen({ navigation }) {
@@ -302,10 +302,20 @@ export default function ProfileScreen({ navigation }) {
         <View style={s.sheet}>
           <View style={s.handle} />
           <Text style={s.sheetTitle}>Change Password</Text>
-          <Text style={s.label}>Current Password</Text>
-          <TextInput style={s.input} value={currentPw} onChangeText={setCurrentPw} secureTextEntry placeholderTextColor={colors.text2} placeholder="••••••••" />
-          <Text style={s.label}>New Password</Text>
-          <TextInput style={s.input} value={newPw} onChangeText={setNewPw} secureTextEntry placeholderTextColor={colors.text2} placeholder="Min 8 characters" />
+          <FormInput
+            label="Current Password"
+            value={currentPw}
+            onChangeText={setCurrentPw}
+            secureTextEntry
+            placeholder="••••••••"
+          />
+          <FormInput
+            label="New Password"
+            value={newPw}
+            onChangeText={setNewPw}
+            secureTextEntry
+            placeholder="Min 8 characters"
+          />
           <PrimaryButton title="Change Password" onPress={handleChangePassword} loading={saving} />
         </View>
       </Modal>
