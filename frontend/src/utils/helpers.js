@@ -1,14 +1,4 @@
 /**
- * Format a number as LKR currency
- */
-export const formatCurrency = (amount) => {
-  return `LKR ${Number(amount).toLocaleString('en-LK', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-};
-
-/**
  * Format a date string to "14 Apr" style
  */
 export const formatDate = (dateStr) => {

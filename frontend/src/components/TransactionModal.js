@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet, TextInput, Platform } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { RADIUS, CATEGORIES as DEFAULT_CATEGORIES } from '../styles/theme';
+import { useCurrency } from '../context/CurrencyContext';
 import { PrimaryButton } from './UI';
 import { categoriesAPI } from '../services/api';
 
@@ -9,6 +10,7 @@ const TYPE_OPTIONS = ['expense', 'income'];
 
 export default function TransactionModal({ visible, onClose, onSave, editItem }) {
   const { colors } = useTheme();
+  const { currency, convertToBase, convertFromBase } = useCurrency();
   const [type, setType] = useState('expense');
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
@@ -43,7 +45,7 @@ export default function TransactionModal({ visible, onClose, onSave, editItem })
     if (editItem) {
       setType(editItem.type);
       setTitle(editItem.title);
-      setAmount(String(editItem.amount));
+      setAmount(String(convertFromBase(editItem.amount)));
       setCategory(editItem.category);
       setDate(editItem.date?.split('T')[0] || new Date().toISOString().split('T')[0]);
       setNote(editItem.note || '');
@@ -66,7 +68,7 @@ export default function TransactionModal({ visible, onClose, onSave, editItem })
     setError('');
     setSaving(true);
     try {
-      await onSave({ type, title: title.trim(), amount: parseFloat(amount), category, date, note: note.trim() });
+      await onSave({ type, title: title.trim(), amount: convertToBase(amount), category, date, note: note.trim() });
       onClose();
     } catch (err) {
       setError(err.message);
@@ -149,7 +151,7 @@ export default function TransactionModal({ visible, onClose, onSave, editItem })
           />
 
           {/* Amount */}
-          <Text style={s.label}>Amount (LKR) *</Text>
+          <Text style={s.label}>Amount ({currency.code}) *</Text>
           <TextInput
             style={s.input}
             placeholder="0.00"

@@ -11,7 +11,7 @@ import { PrimaryButton, EmptyState, Toast } from '../components/UI';
 
 export default function BudgetScreen() {
   const { colors } = useTheme();
-  const { formatAmount } = useCurrency();
+  const { formatAmount, currency, convertToBase, convertFromBase } = useCurrency();
   const { selectedMonth } = useMonth();
   const [budgets, setBudgets] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -49,7 +49,7 @@ export default function BudgetScreen() {
     if (!limit || limit <= 0) { showToast('Enter a valid limit'); return; }
     setSaving(true);
     try {
-      await budgetsAPI.save(selectedCat, limit);
+      await budgetsAPI.save(selectedCat, convertToBase(limit));
       showToast('Budget saved!');
       setModalVisible(false);
       setLimitInput('');
@@ -166,7 +166,7 @@ export default function BudgetScreen() {
                   <TouchableOpacity 
                     onPress={() => {
                       setSelectedCat(b.category.toLowerCase());
-                      setLimitInput(b.limit.toString());
+                      setLimitInput(convertFromBase(b.limit).toString());
                       setModalVisible(true);
                     }}
                     style={{ marginRight: 12 }}
@@ -226,7 +226,7 @@ export default function BudgetScreen() {
             </ScrollView>
           </View>
 
-          <Text style={s.label}>Monthly Limit (LKR)</Text>
+          <Text style={s.label}>Monthly Limit ({currency.code})</Text>
           <TextInput
             style={s.input}
             placeholder="0.00"

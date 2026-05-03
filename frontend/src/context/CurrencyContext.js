@@ -4,12 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const CurrencyContext = createContext();
 
 export const CURRENCIES = [
-  { code: 'LKR', symbol: 'Rs.', label: 'Sri Lankan Rupee', locale: 'en-LK' },
-  { code: 'USD', symbol: '$', label: 'US Dollar', locale: 'en-US' },
-  { code: 'EUR', symbol: '€', label: 'Euro', locale: 'de-DE' },
-  { code: 'GBP', symbol: '£', label: 'British Pound', locale: 'en-GB' },
-  { code: 'INR', symbol: '₹', label: 'Indian Rupee', locale: 'en-IN' },
-  { code: 'JPY', symbol: '¥', label: 'Japanese Yen', locale: 'ja-JP' },
+  { code: 'LKR', symbol: 'Rs.', label: 'Sri Lankan Rupee', locale: 'en-LK', rate: 1 },
+  { code: 'USD', symbol: '$', label: 'US Dollar', locale: 'en-US', rate: 300 },
 ];
 
 export const CurrencyProvider = ({ children }) => {
@@ -42,19 +38,36 @@ export const CurrencyProvider = ({ children }) => {
     }
   };
 
+  const convertToBase = (amount) => {
+    return Number(amount) * currency.rate;
+  };
+
+  const convertFromBase = (amount) => {
+    return Number(amount) / currency.rate;
+  };
+
   const formatAmount = (amount) => {
     return `${currency.symbol} ${formatValue(amount)}`;
   };
 
   const formatValue = (amount) => {
-    return Number(amount).toLocaleString(currency.locale, {
+    const converted = convertFromBase(amount);
+    return Number(converted).toLocaleString(currency.locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, changeCurrency, formatAmount, formatValue, loadComplete }}>
+    <CurrencyContext.Provider value={{ 
+      currency, 
+      changeCurrency, 
+      formatAmount, 
+      formatValue, 
+      convertToBase,
+      convertFromBase,
+      loadComplete 
+    }}>
       {children}
     </CurrencyContext.Provider>
   );
